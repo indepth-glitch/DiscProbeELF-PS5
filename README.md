@@ -1,4 +1,4 @@
-# PS5 Disc Fallback Probe v1.2
+# PS5 Disc Fallback Probe EXPERIMENTAL
 
 Standalone PS5 payload that tests the concrete optical-access alternatives
 found in public PS5 homebrew research.
