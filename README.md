@@ -1,66 +1,61 @@
-# DiscProbeELF-PS5
-Experimental PS5 optical-disc research payload for testing PS2 DVD access through `/dev/cd0`, `/mnt/disc`, and related interfaces. Created to explore possible physical-disc support for PS5SX2.
+# PS5 Disc Fallback Probe v1.2
 
-An experimental PS5 payload project investigating whether original PlayStation 2 DVD-ROM discs and readable recordable DVD media can be accessed from the PS5 homebrew environment.
+Standalone PS5 payload that tests the concrete optical-access alternatives
+found in public PS5 homebrew research.
 
-With PS5SX2 bringing PCSX2-based PlayStation 2 emulation to PS5, this project explores one additional possibility: using physical PS2 discs as a game source instead of requiring users to manually provide an image file.
+No PS5SX2 integration. No disc dumping.
 
-The project currently focuses on research and hardware testing. It does not modify PS5SX2 and does not currently provide physical-disc support for PS5SX2.
+## Paths tested
 
-Current Research
+### `/mnt/disc`
 
-The test payload investigates several PS5 optical-disc interfaces:
+Tests whether Sony has mounted the inserted disc as a filesystem and whether
+`SYSTEM.CNF` is directly visible.
 
-/dev/cd0 optical-device access
+### `/dev/cd0`
 
-/mnt/disc filesystem access
+Tests:
 
-ISO9660 sector reading
+- read-only open
+- `CDIOCALLOW` if the SDK exposes `<sys/cdio.h>`
+- TOC-header ioctl if the SDK exposes it
+- ordinary 2048-byte LBA 16 read
+- ISO-9660 `CD001`
+- volume label
 
-SYSTEM.CNF detection
+The payload NEVER sends `CDIOCEJECT`.
 
-PS2 game serial identification
+### `/dev/duid`
 
-ISO volume-label detection
+Tests only whether the node opens and returns bytes. The bytes themselves are
+not displayed or saved.
 
-Optical-drive ioctl availability
+## Why CAM/SCSI and SceBdSvc aren't hard-coded
 
-Disc identity interfaces such as /dev/duid
+Those are useful fallback directions, but guessing private/firmware-dependent
+ABI definitions would make this test less trustworthy and could send invalid
+commands to the optical device. This build first measures interfaces that
+have concrete public PS5 evidence.
 
-Sustained optical read performance
+If `/dev/cd0` opens and CD ioctls work while block reads fail, preserve the
+exact errno. That is the useful result for a subsequent CAM/SCSI-specific
+probe.
 
-Original PS2 DVD-ROM compatibility
+## Build
 
-DVD-R/DVD+R accessibility
+    export PS5_PAYLOAD_SDK=/opt/ps5-payload-sdk
+    make clean
+    make
 
-The goal is to determine which interfaces are usable before implementing an emulator-specific physical-disc backend.
+Output:
 
-Long-Term Goal
+    ps5-disc-fallback-probe.elf
 
-If reliable PS2 DVD access can be demonstrated, a future implementation could potentially use the PS5 optical drive together with PCSX2's existing CDVD emulation architecture.
+## Test order
 
-Possible approaches include:
+1. No disc.
+2. Known-readable DVD.
+3. Original DVD-based PS2 game.
+4. User-authored/homebrew DVD-R.
 
-Direct physical-disc sector access.
-
-A privileged DiscBridge service between the optical drive and a sandboxed emulator.
-
-Installing/caching disc data to PS5 storage for faster loading while retaining physical-disc presence as part of the experience.
-
-These approaches are experimental and have not yet been demonstrated to work with PS5SX2.
-
-Current Status
-
-Experimental / Proof of Concept
-
-The current payload is intended to answer a basic question:
-
-Can an exploited PS5 reliably access the filesystem and/or sectors of an original DVD-based PlayStation 2 game?
-
-Results from real hardware testing will determine whether further PS5SX2 integration is technically viable.
-
-Important
-
-This project is independent research and is not affiliated with Sony Interactive Entertainment, PCSX2, or the PS5SX2 developers.
-
-The project is intended for interoperability research, homebrew development, and testing with media you are authorized to use.
+Photograph the notifications, especially failures and errno values.
