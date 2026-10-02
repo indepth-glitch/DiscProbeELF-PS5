@@ -3,6 +3,9 @@
 Standalone PS5 payload that tests the concrete optical-access alternatives
 found in public PS5 homebrew research.
 
+AND REMEMBER THIS IS FOR EXPERIMENTAL USE! I WOULD LIKE TO MAKE PEEPS WAIT FIRST UNTIL IT'S DONE,
+MY DUMBASS WANTS TO FINISH THIS CODE!
+
 No PS5SX2 integration. No disc dumping.
 
 ## Paths tested
